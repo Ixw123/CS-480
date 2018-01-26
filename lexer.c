@@ -1,4 +1,5 @@
 /*
+*	Homework # 1
 *	lexer.c
 *	Written by Micah Church 
 *	C for gcc compiler
