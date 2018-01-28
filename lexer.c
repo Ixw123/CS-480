@@ -249,7 +249,9 @@ Beigning the case to check the whole buffer for all of the correct tokens
 	 * before AND after this function.  We add the '\0' since the token may
 	 * be followed by additional characters.
 	 */
-	token->str = (char *)calloc(token->length + 1, sizeof(char)); //creat a dynamically allocated string to the exact size we need +1 filled with null characters
+	//create a dynamically allocated string to the exact size we need +1 filled 
+	//with null characters
+	token->str = (char *)calloc(token->length + 1, sizeof(char)); 
 	/* Return a NULL string if allocation fails */
 	if(token->str) {
 		//Copy the substring from begin to the length to token->str
