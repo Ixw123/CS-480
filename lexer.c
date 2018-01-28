@@ -1,7 +1,7 @@
 /*
 *	Homework # 1
 *	lexer.c
-*	Written by Micah Church 
+*	Written by Micah Church, Cynthia Ha and Luke Krentz 
 *	C for gcc compiler
 *	January, 25, 2018
 */
@@ -84,68 +84,79 @@ Token_ID get_token(char **buffer, Token *token) {
 		}
 	}
 	end = begin;
+/*************************************************************************************
+
+Beigning the case to check the whole buffer for all of the correct tokens
+
+1) Case to check for keyword token
+	1.1) If not keyword its a pound token
+2) Case to check for strings token
+3) Case to check for comments token
+	3.1) See if it is a line comment
+4) Case to check for EOF token
+5) Case to check for equals token
+6) Case to check for period token
+7) Case to check for number token
+8) Case to check for identifier token
+9) Compare the assumed keyword to the accepted keywords
+
+*************************************************************************************/
 	switch(*end) {
 /*************************************************************************************
-Case to check if the first token is a pound, or a keyword
+1) Case to check if the first token is a pound, or a keyword
 *************************************************************************************/	
 	case '#':
 		end++;
+		//All keywords start with an upper case letter so check for that
 		if(isupper(*end)) {
+			//Keyword then have all lower case letters
 			do {
 				end++;
 			} while(islower(*end));
 			end--;
 			is_keyword = true; //say this could be a keyword for use later on
 		}
+		/*----------------------------------------------------------------------------
+		1.1) If the line has a pound but has anything other than Uppercase than 
+		the token is a pound
+		----------------------------------------------------------------------------*/
 		else {
 			end = begin;
 			token->id = TOKEN_POUND;
 		}
 		break;
 /*************************************************************************************
-Case to check for STRING token
+2) Case to check for STRING token
 *************************************************************************************/
 	case '[':
 		end++;
-			while(*end != ']' && *end != '\0') {
-				end++;
-			}
-			if(*end == ']') {
-				token->id = TOKEN_STRING;
-			}
-			else {
-				end = begin;
-				token->id = TOKEN_BAD;
-			}
+		//Go through all the preceeding characters until eof, ] or newline 
+		while(*end != ']' && *end != '\0' && *end != '\n') {
+			end++;
+		}
+		//If the last character is a ] it is a string
+		if(*end == ']') {
+			token->id = TOKEN_STRING;
+		}
+		//Otherwise the [ is a bad token and the rest is normal
+		else {
+			end = begin;
+			token->id = TOKEN_BAD;
+		}
 		break;
 /*************************************************************************************
-Case to check if it is the EOF token
-*************************************************************************************/
-	case '\0':
-		token->id = TOKEN_EOF;
-		break;
-/*************************************************************************************
-Case to check for EQUALS token
-*************************************************************************************/
-	case '=':
-		token->id = TOKEN_EQUALS;
-		break;
-/*************************************************************************************
-Case to check for PERIOD token
-*************************************************************************************/
-	case '.':
-		token->id = TOKEN_PERIOD;
-		break;
-/*************************************************************************************
-Case to check for COMMENT token
+3) Case to check for COMMENT token
 *************************************************************************************/
 	case '*':
 		end++;
+		//See if there is another * to check for block comment
 		if(*end == '*') {
 			end++;
 			while(*end != '\0' && !end_block){
+				//go through till there is a *
 				if(*end == '*') {
 					end++;
+					//check for a block comment closing
 					if(*end == '*') {
 						end_block = true;
 					}
@@ -153,15 +164,16 @@ Case to check for COMMENT token
 				end++;
 			}
 			end--;
+			//if it doesnt end the first * is bad and then treat the rest as normal
 			if(!end_block) {
 				end = begin;
 				token->id = TOKEN_BAD;
 				break;
 			}
 		}
-/*------------------------------------------------------------------------------------
-If it only has one astrix it must be a line comment
-------------------------------------------------------------------------------------*/
+		/*----------------------------------------------------------------------------
+		3.1) If it only has one astrix it must be a line comment
+		----------------------------------------------------------------------------*/
 		else {
 			while(*end != '\0' && *end != '\n') {
 				end++;
@@ -170,31 +182,54 @@ If it only has one astrix it must be a line comment
 		}
 		token->id = TOKEN_COMMENT;
 		break;
+/*************************************************************************************
+4) Case to check if it is the EOF token
+*************************************************************************************/
+	case '\0':
+		token->id = TOKEN_EOF;
+		break;
+/*************************************************************************************
+5) Case to check for EQUALS token
+*************************************************************************************/
+	case '=':
+		token->id = TOKEN_EQUALS;
+		break;
+/*************************************************************************************
+6) Case to check for PERIOD token
+*************************************************************************************/
+	case '.':
+		token->id = TOKEN_PERIOD;
+		break;
 	default:
 /*************************************************************************************
-Case to check for a NUMBER token
+7) Case to check for a NUMBER token
 *************************************************************************************/		
 		if(isdigit(*end) || *end == '+' || *end == '-') {
 			end++;
 			while(isdigit(*end)) {
 				end++;
 			}
+			//See if it is a real number 
 			if(*end == '.') {
 				end++;
 				while(isdigit(*end)) {
 					end++;
 				}
 				end--;
+				//if it is a real number with another . decriment end one so it is 
+				//a valid number
 				if(!(isdigit(*end)))
 					end--;
 			}
+			//if it is not real then get rid of the .
 			else	
 				end--;
 			token->id = TOKEN_NUMBER;
 		} 
 /*************************************************************************************
-Case to check for IDENTIFIIER token
+8) Case to check for IDENTIFIIER token
 *************************************************************************************/
+		//go until there isnt a lower case letter
 		else if (islower(*end)) {
 			do {
 				end++;
@@ -202,12 +237,11 @@ Case to check for IDENTIFIIER token
 			end--;
 			token->id = TOKEN_IDENTIFIER;
 		}
+		//if its not an identifier it is a bad token
 		else {
-			//end = begin;
 			token->id = TOKEN_BAD;
 		}
 	}
-		
 	token->length = end - begin + 1;
 
 	/*
@@ -218,9 +252,14 @@ Case to check for IDENTIFIIER token
 	token->str = (char *)calloc(token->length + 1, sizeof(char)); //creat a dynamically allocated string to the exact size we need +1 filled with null characters
 	/* Return a NULL string if allocation fails */
 	if(token->str) {
-		memcpy(token->str, begin, token->length); //copy the content of the string begin + length to str
+		//Copy the substring from begin to the length to token->str
+		memcpy(token->str, begin, token->length);
+/*************************************************************************************
+9) Check to see if the assumed keyword is actually a keyword
+*************************************************************************************/
 		if(is_keyword) {
 			int i = 0;
+			//cycle through all accepted keywords till it matches then break
 			while(i < TOKEN_KEYWORD_CNT) {
 				if(strcmp(token->str, keyword[i]) == 0) {
 					token->id = (Token_ID)i;
@@ -228,6 +267,8 @@ Case to check for IDENTIFIIER token
 				}
 				i++;
 			}
+			//if the loop counter is = to TOKEN_KEYWORD_CNT then it isnt a key word
+			//so it must be a pound token
 			if (i == TOKEN_KEYWORD_CNT) {
 				end = begin;
 				token->id = TOKEN_POUND;
