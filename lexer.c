@@ -116,10 +116,10 @@ Beigning the case to check the whole buffer for all of the correct tokens
 			end--;
 			is_keyword = true; //say this could be a keyword for use later on
 		}
-		/*----------------------------------------------------------------------------
+		/*--------------------------------------------------------------------
 		1.1) If the line has a pound but has anything other than Uppercase than 
 		the token is a pound
-		----------------------------------------------------------------------------*/
+		--------------------------------------------------------------------*/
 		else {
 			end = begin;
 			token->id = TOKEN_POUND;
@@ -171,9 +171,9 @@ Beigning the case to check the whole buffer for all of the correct tokens
 				break;
 			}
 		}
-		/*----------------------------------------------------------------------------
+		/*--------------------------------------------------------------------
 		3.1) If it only has one astrix it must be a line comment
-		----------------------------------------------------------------------------*/
+		--------------------------------------------------------------------*/
 		else {
 			while(*end != '\0' && *end != '\n') {
 				end++;
